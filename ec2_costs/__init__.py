@@ -51,7 +51,11 @@ def get_instance_groups(conn):
         )
         instance_groups[key].append(instance)
 
-    sorted_groups = sorted(instance_groups.iteritems(), key=lambda item: len(item[1]), reverse=True)
+    sorted_groups = sorted(
+        instance_groups.iteritems(),
+        key=lambda item: (item[0][0], len(item[1])),
+        reverse=True,
+    )
     return sorted_groups
 
 
