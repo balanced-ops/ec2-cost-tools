@@ -7,7 +7,7 @@ __version__ = '0.1.0'
 def get_reserved_groups(conn):
     """Get reserved instance groups, return a dict mapping from
 
-        (instance type, VPC or not, Availability zone)
+        (instance type, VPC or not, Availability zone, Tenancy)
 
     to
 
@@ -21,7 +21,8 @@ def get_reserved_groups(conn):
         key = (
             reserved.instance_type,
             'VPC' in reserved.description,
-            reserved.availability_zone
+            reserved.availability_zone,
+            reserved.instance_tenancy,
         )
         for _ in range(reserved.instance_count):
             reserved_groups[key].append(reserved)
@@ -31,7 +32,7 @@ def get_reserved_groups(conn):
 def get_instance_groups(conn):
     """Get instance groups, return a dict mapping from
 
-        (instance type, VPC ID, Availability zone)
+        (instance type, VPC ID, Availability zone, Tenancy)
 
     to
 
@@ -46,6 +47,7 @@ def get_instance_groups(conn):
             instance.instance_type,
             instance.vpc_id,
             instance.placement,
+            instance.placement_tenancy,
         )
         instance_groups[key].append(instance)
 
@@ -58,13 +60,14 @@ def get_reserved_analysis(conn):
     instance_groups = get_instance_groups(conn)
 
     instance_items = []
-    for (itype, vpc_id, zone), values in instance_groups:
+    for (itype, vpc_id, zone, tenancy), values in instance_groups:
         instances = []
         for instance in values:
             key = (
                 itype,
                 vpc_id is not None,
                 zone,
+                tenancy,
             )
             reserved_instances = reserved_groups[key]
             covered = False
@@ -73,7 +76,7 @@ def get_reserved_analysis(conn):
                 reserved_instances.pop()
             instances.append((instance.id, covered, instance.tags.get('Name')))
         instance_items.append((
-            (itype, vpc_id, zone),
+            (itype, vpc_id, zone, tenancy),
             instances,
         ))
 
