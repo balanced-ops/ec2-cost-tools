@@ -49,8 +49,8 @@ You will see two tables like this
 +---------------+-------+------------+---------+-------+
 ```
 
-The first table indicates all running instacnes, and shows that whether they are covered by reserved instance. You should notice that actually reserved instances have no one-to-one relationship between EC2 instances, it only affects the billing. The `Covered` is just for you to understand the reserved instance coverage easily.
+The first table indicates all running instacnes, and shows that whether they are covered by reserved instances. You should notice that actually reserved instances have no one-to-one relationship between EC2 instances, it only affects the billing. The `Covered` is just for you to understand the reserved instance coverage easily.
 
 To understand how many reserved instances are not in use, you can see the second table. In our example, there are two reserved instances with m3.medium type, non-VPC in us-west-1b zone are not used.
 
-With these two chart, you can understand how many reserved instances are in-use, then decide how many more to buy or sell.
+With these two tables, you can understand how many reserved instances are in-use, then decide how many more to buy or sell.
