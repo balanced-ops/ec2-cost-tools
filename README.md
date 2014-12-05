@@ -1,7 +1,7 @@
 ec2-cost-tools
 ==============
 
-Simple tools for EC2 cost analysis
+Simple tools for EC2 reserved instances cost analysis 
 
 Usage
 =====
