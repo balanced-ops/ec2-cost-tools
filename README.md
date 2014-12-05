@@ -32,13 +32,13 @@ You will see two tables like this
 | Instance type | VPC  | Zone       | Tenancy | Covered | Instnace ID | Name           |
 +---------------+------+------------+---------+---------+-------------+----------------+
 | m3.medium     | None | us-west-1b | default | 4 / 4   |             |                |
-|               |      |            |         | True    | i-6ca7f0a4  | foo-api-dev2 |
-|               |      |            |         | True    | i-1b2474d3  | bar-api-prod |
-|               |      |            |         | True    | i-6c2d7da4  | foo-api-prod |
-|               |      |            |         | True    | i-7ca7f0b4  | bar-api-dev2 |
+|               |      |            |         | True    | i-6ca7f0a4  | foo-api-dev2   |
+|               |      |            |         | True    | i-1b2474d3  | bar-api-prod   |
+|               |      |            |         | True    | i-6c2d7da4  | foo-api-prod   |
+|               |      |            |         | True    | i-7ca7f0b4  | bar-api-dev2   |
 | m3.medium     | None | us-west-1c | default | 2 / 2   |             |                |
-|               |      |            |         | True    | i-00f6a3ca  | foo-api-prod |
-|               |      |            |         | True    | i-b20b5f78  | bar-api-prod |
+|               |      |            |         | True    | i-00f6a3ca  | foo-api-prod   |
+|               |      |            |         | True    | i-b20b5f78  | bar-api-prod   |
 +---------------+------+------------+---------+---------+-------------+----------------+
 ########## Not in-use reserved instances ##########
 +---------------+-------+------------+---------+-------+
