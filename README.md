@@ -19,7 +19,7 @@ export AWS_ACCESS_KEY_ID=<Your aws access key>
 export AWS_SECRET_ACCESS_KEY=<Your aws secret key>
 ```
 
-If you want to see the costs analysis for reserved instances of `us-west-` region, then run
+If you want to see the costs analysis for reserved instances of `us-west-1` region, then run
 
 ```bash
 ec2-costs us-west-1
