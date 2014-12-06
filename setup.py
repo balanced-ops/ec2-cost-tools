@@ -22,6 +22,7 @@ setup(
         'boto',
         'click',
         'prettytable',
+        'requests',
     ],
     extras_require=dict(
         tests=tests_require,

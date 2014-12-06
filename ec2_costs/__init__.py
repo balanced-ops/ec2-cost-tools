@@ -1,7 +1,50 @@
 from __future__ import unicode_literals
+import re
+import json
 import collections
 
+import requests
+
 __version__ = '0.1.0'
+
+LINUX_ON_DEMAND_PRICE_URL = (
+    'http://a0.awsstatic.com/pricing/1/ec2/linux-od.min.js'
+)
+LINUX_ON_DEMAND_PREVIOUS_GEN_PRICE_URL = (
+    'http://a0.awsstatic.com/pricing/1/ec2/previous-generation/linux-od.min.js'
+)
+
+
+def get_price_table(url):
+    """Get and return price table
+
+    """
+    resp = requests.get(url)
+    content = resp.content
+    callback_prefix = 'callback('
+    callback_suffix = ');'
+    prefix_index = content.find(callback_prefix) + len(callback_prefix)
+    suffix_index = content.rfind(callback_suffix)
+    content = content[prefix_index:suffix_index]
+    # do a little regular expression hack to quote key name to make the
+    # cotent becomes JSON format
+    content = re.sub(r'(\w+?):', r'"\1":', content)
+    return json.loads(content)
+
+
+def price_table_to_price_mapping(table):
+    """Convert price table to a dict mapping from region to instance type
+    to instance info
+
+    """
+    region_price_mapping = {}
+    for region_table in table['config']['regions']:
+        types = {}
+        for type_category in region_table['instanceTypes']:
+            for size in type_category['sizes']:
+                types[size['size']] = size
+        region_price_mapping[region_table['region']] = types
+    return region_price_mapping
 
 
 def get_reserved_groups(conn):
@@ -74,11 +117,11 @@ def get_reserved_analysis(conn):
                 tenancy,
             )
             reserved_instances = reserved_groups[key]
-            covered = False
+            covered_price = None
             if reserved_instances:
-                covered = True
-                reserved_instances.pop()
-            instances.append((instance.id, covered, instance.tags.get('Name')))
+                ri = reserved_instances.pop()
+                covered_price = ri.recurring_charges[0].amount
+            instances.append((instance.id, covered_price, instance.tags.get('Name')))
         instance_items.append((
             (itype, vpc_id, zone, tenancy),
             instances,
