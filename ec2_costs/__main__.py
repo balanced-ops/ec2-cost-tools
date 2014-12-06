@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+from __future__ import print_function
 import decimal
 
 import click
@@ -10,6 +11,10 @@ from . import get_price_table
 from . import price_table_to_price_mapping
 from . import LINUX_ON_DEMAND_PRICE_URL
 from . import LINUX_ON_DEMAND_PREVIOUS_GEN_PRICE_URL
+
+
+def format_price(price):
+    return '{:,.2f}'.format(price)
 
 
 @click.command()
@@ -26,6 +31,11 @@ def main(region):
 
     # we assume there are 30 days in a month
     month_hours = 30 * 24
+
+    # ec2 instance totoal cost per month
+    ec2_total_cost = 0
+    # ec2 instance totoal cost if all are using on-demand
+    ec2_all_on_demand_total_cost = 0
 
     conn = boto.ec2.connect_to_region(region)
     result = get_reserved_analysis(conn)
@@ -70,7 +80,7 @@ def main(region):
             zone,
             tenancy,
             '{} / {}'.format(covered_count, len(instances))
-        ] + ([''] * 2) + ['{:,.2f}'.format(total_cost)])
+        ] + ([''] * 2) + [format_price(total_cost)])
         for instance_id, covered_price, name in instances:
             unit_cost = od_unit_cost
             if covered_price is not None:
@@ -79,9 +89,14 @@ def main(region):
                 covered_price is not None,
                 instance_id,
                 name,
-                '{:,.2f}'.format(unit_cost * month_hours),
+                format_price(unit_cost * month_hours),
             ])
-    print table
+
+        ec2_total_cost += total_cost
+        ec2_all_on_demand_total_cost += (
+            od_unit_cost * month_hours * len(instances)
+        )
+    print(table)
 
     columns = [
         'Instance type',
@@ -108,7 +123,21 @@ def main(region):
             zone,
             tenancy,
             len(instances),
-            '{:,.2f}'.format(unit_cost * month_hours),
+            format_price(unit_cost * month_hours),
         ])
-    print '#' * 10, 'Not in-use reserved instances', '#' * 10
-    print table
+        ec2_total_cost += unit_cost * month_hours
+    print('#' * 10, 'Not in-use reserved instances', '#' * 10)
+    print(table)
+
+    print('#' * 10, 'Summary', '#' * 10)
+    print(
+        'EC2 Monthly Costs:', format_price(ec2_total_cost)
+    )
+    print(
+        'EC2 Monthly All On Demand Costs:',
+        format_price(ec2_all_on_demand_total_cost)
+    )
+    print(
+        'Amount you saved by using reserved:',
+        format_price(ec2_all_on_demand_total_cost - ec2_total_cost)
+    )
