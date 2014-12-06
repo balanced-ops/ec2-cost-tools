@@ -141,3 +141,9 @@ def main(region):
         'Amount you saved by using reserved:',
         format_price(ec2_all_on_demand_total_cost - ec2_total_cost)
     )
+    print(
+        'Percentage you saved by using reserved:',
+        '% {:,.2f}'.format(
+            ((ec2_all_on_demand_total_cost - ec2_total_cost) / ec2_all_on_demand_total_cost) * 100
+        )
+    )
