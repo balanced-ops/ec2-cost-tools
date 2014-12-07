@@ -117,15 +117,16 @@ def main(region):
             unit_cost = decimal.Decimal(
                 instances[0].recurring_charges[0].amount
             )
+        reserved_cost = len(instances) * unit_cost * month_hours
         table.add_row([
             instance_type,
             vpc,
             zone,
             tenancy,
             len(instances),
-            format_price(unit_cost * month_hours),
+            format_price(reserved_cost),
         ])
-        ec2_total_cost += unit_cost * month_hours
+        ec2_total_cost += reserved_cost
     print('#' * 10, 'Not in-use reserved instances', '#' * 10)
     print(table)
 
