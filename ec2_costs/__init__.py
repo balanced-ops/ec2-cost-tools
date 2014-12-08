@@ -102,6 +102,25 @@ def get_instance_groups(conn):
     return sorted_groups
 
 
+def _match_reserved_instances(reserved_groups, itype, in_vpc, zone, tenancy):
+    """Try to match reserved instance in reserved_groups, if it does,
+    remove the instance from reserved_groups and return the reserved instance.
+    If no reserved instance matches, return None
+
+    """
+    for key in [
+        # match the same VPC instances first
+        (itype, in_vpc, zone, tenancy),
+        # since VPC doesn't really affect the billing, so we also try to
+        # match the oppsite VPC setting instances too
+        (itype, not in_vpc, zone, tenancy),
+    ]:
+        reserved_instances = reserved_groups.get(tuple(key))
+        if reserved_instances:
+            ri = reserved_instances.pop()
+            return ri
+
+
 def get_reserved_analysis(conn):
     reserved_groups = get_reserved_groups(conn)
     instance_groups = get_instance_groups(conn)
@@ -110,17 +129,15 @@ def get_reserved_analysis(conn):
     for (itype, vpc_id, zone, tenancy), values in instance_groups:
         instances = []
         for instance in values:
-            key = (
-                itype,
-                vpc_id is not None,
-                zone,
-                tenancy,
+            matched = _match_reserved_instances(
+                reserved_groups=reserved_groups,
+                itype=itype,
+                in_vpc=vpc_id is not None,
+                zone=zone,
+                tenancy=tenancy,
             )
-            reserved_instances = reserved_groups[key]
-            covered_price = None
-            if reserved_instances:
-                ri = reserved_instances.pop()
-                covered_price = ri.recurring_charges[0].amount
+            if matched:
+                covered_price = matched.recurring_charges[0].amount
             instances.append((instance.id, covered_price, instance.tags.get('Name')))
         instance_items.append((
             (itype, vpc_id, zone, tenancy),
