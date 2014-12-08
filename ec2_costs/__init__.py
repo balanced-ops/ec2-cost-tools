@@ -136,6 +136,7 @@ def get_reserved_analysis(conn):
                 zone=zone,
                 tenancy=tenancy,
             )
+            covered_price = None
             if matched:
                 covered_price = matched.recurring_charges[0].amount
             instances.append((instance.id, covered_price, instance.tags.get('Name')))
