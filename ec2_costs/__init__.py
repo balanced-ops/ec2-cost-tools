@@ -122,6 +122,8 @@ def _match_reserved_instances(reserved_groups, itype, in_vpc, zone, tenancy):
 
 
 def get_reserved_analysis(conn):
+    all_reserved_groups = get_reserved_groups(conn)
+    # duplicate the reserved_groups collection so we can destructively modify it when finding matches
     reserved_groups = get_reserved_groups(conn)
     instance_groups = get_instance_groups(conn)
 
@@ -148,4 +150,5 @@ def get_reserved_analysis(conn):
     return dict(
         instance_items=instance_items,
         not_used_reserved_instances=reserved_groups,
+        all_reserved_groups=all_reserved_groups,
     )

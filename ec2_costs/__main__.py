@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 from __future__ import print_function
 import decimal
+import datetime
 
 import click
 import boto.ec2
@@ -19,7 +20,8 @@ def format_price(price):
 
 @click.command()
 @click.argument('region', nargs=1)
-def main(region):
+@click.option('--show-expirations/--no-show-expirations', help='Show future RI expirations')
+def main(region, show_expirations=False):
     od_price_table = get_price_table(LINUX_ON_DEMAND_PRICE_URL)
     od_price_mapping = price_table_to_price_mapping(od_price_table)
     pre_od_price_table = get_price_table(LINUX_ON_DEMAND_PREVIOUS_GEN_PRICE_URL)
@@ -129,6 +131,37 @@ def main(region):
         ec2_total_cost += reserved_cost
     print('#' * 10, 'Not in-use reserved instances', '#' * 10)
     print(table)
+
+    if show_expirations:
+        print('#' * 10, 'Imminent RI expirations', '#' * 10)
+        columns = [
+            'Instance type',
+            'VPC',
+            'Zone',
+            'Tenancy',
+            'Count',
+            'Expiration',
+        ]
+        table = PrettyTable(columns)
+        all_reserved_groups = result['all_reserved_groups'].iteritems()
+        for (instance_type, vpc, zone, tenancy), instances in all_reserved_groups:
+            skip_rows = 0
+            for instance in instances:
+                expiration = None
+                if instance.state == "active" and skip_rows == 0:
+                    d = datetime.datetime.strptime( instance.start, "%Y-%m-%dT%H:%M:%S.%fZ" )
+                    expiration = d + datetime.timedelta(seconds=instance.duration)
+                    table.add_row([
+                        instance_type,
+                        vpc,
+                        zone,
+                        tenancy,
+                        instance.instance_count,
+                        expiration,
+                    ])
+                    skip_rows = instance.instance_count
+                skip_rows = skip_rows - 1
+        print(table.get_string(sortby='Expiration'))
 
     print('#' * 10, 'Summary', '#' * 10)
     print(
